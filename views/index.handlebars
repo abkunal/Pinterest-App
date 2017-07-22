@@ -1,3 +1,25 @@
 <article id="wall" class="center">
   All Images go here
+  <div id='masonry'>
+      <div class="item"><img src="https://image.freepik.com/free-photo/nature-design-with-bokeh-effect_1048-1882.jpg" ></div>
+      <div class="item"><img  src="https://s-media-cache-ak0.pinimg.com/736x/5a/e9/50/5ae9501fc3b49810db7901873f77d6f7--beautiful-nature-photos-beautiful-days.jpg"></div>
+      
+    </div>
 </article>
+
+<script type="text/javascript">
+  $(() => {
+    let images = [{{{images}}}];
+    console.log(images);
+
+    function template(url, likes, description, author) {
+      let tag = "<div class='item'>"+  +"</div>";
+    }
+  });
+
+  var container = document.querySelector('#masonry');
+  var masonry = new Masonry(container, {
+    columnWidth: 50,
+    itemSelector: '.item'
+  });
+</script>

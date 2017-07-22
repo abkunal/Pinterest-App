@@ -73,3 +73,50 @@ a#brand {
 nav.navbar.navbar-default.navbar-fixed-top {
     background-color: #6495ed;
 }
+
+.drop {
+  margin-bottom: 5px;
+}
+
+a#drop1[aria-expanded=true] {
+    background-color: #7495ff;
+}
+
+/* MASONRY START */ 
+* {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+#masonry {
+  margin: 0 auto;
+}
+
+.item {
+    background-color: #f8f8f8;
+    padding: 5px;
+    width: 190px;
+    text-align: center;
+    margin: 5px;
+    box-shadow: 2px 2px 5px rgba(102, 102, 102, 0.5);
+}
+/*
+.item.thumbnail {
+  width:  100px;
+  height: 100px;
+  background: #cfcfcf
+}
+
+.item.medium {
+  width:  150px;
+  height: 50px;
+  background: #A6E392
+}
+
+.item.large {
+  width:  200px;
+  height: 100px;
+  background: #D092E3
+}*/
+/* MASONRY END */

@@ -7,7 +7,7 @@ var UserSchema = mongoose.Schema({
   email: String,
   password: String,
   liked: [],
-  images: [],
+  images: []            // [url, time]
 });
 
 module.exports = User = mongoose.model("imageuser", UserSchema);
@@ -36,19 +36,26 @@ module.exports.getUserByEmail = (email, callback) => {
 }
 
 // add an image
-module.exports.addImage = (id, email, callback) => {
-  User.update({email: email}, {$push: {image: id}}, callback);
+module.exports.addImage = (url, time, email, callback) => {
+  User.update({email: email}, {$push: {image: [url, time]}}, callback);
 }
 
 // delete an image
-module.exports.deleteImage = (id, email, callback) => {
+module.exports.deleteImage = (url, time, email, callback) => {
   User.findOne({email: email}, (err, user) => {
     if (err) throw err;
 
     // if user exists
     if (user) {
-      let index = user.images;
+      let index = -1;
       let images = user.images;
+
+      for (let i in images) {
+        if (images[i] == [url, time]) {
+          index = i;
+          break
+        }
+      }
 
       // image exists
       if (index > -1) {
@@ -67,6 +74,6 @@ module.exports.deleteImage = (id, email, callback) => {
 }
 
 // add an image to liked images
-module.exports.addLikedImage = (id, email, callback) => {
-  User.update({email: email}, {$push: {images: id}}, callback);
+module.exports.addLikedImage = (url, time, email, callback) => {
+  User.update({email: email}, {$push: {images: [url, time]}}, callback);
 }

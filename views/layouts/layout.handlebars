@@ -16,6 +16,7 @@
 
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
     <script type="text/javascript" src="/js/script.js"></script>
   </head>
 
@@ -36,8 +37,20 @@
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-right">
             {{#if user}}
-              <li><a class="navlink" href="">My Clicks</a></li>
-              <li><a class="navlink" href="">Add a click</a></li>
+              <li><a class="navlink" href="/my">My Clicks</a></li>
+              <li><a class="navlink" href="/add">Add a click</a></li>
+              <li class="dropdown"> 
+                <a href="#" class="dropdown-toggle navlink" id="drop1" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> Add a click 
+                  <span class="caret"></span> 
+                </a> 
+                <ul class="dropdown-menu" aria-labelledby="drop1"> 
+                  <form method="post" action="/add">
+                    <li><input class="drop form-control" type="text" name="imageUrl" placeholder="Image URL"></li>
+                    <li><input class="drop form-control" type="text" name="imageDescription" placeholder="Image description"></li>
+                    <li class="center"><button class="btn btn-primary">Add</button></li>
+                  </form>
+                </ul>
+              </li>
               <li><a class="navlink" href="/users/logout">Logout</a></li>
             {{else}}
               
@@ -57,6 +70,8 @@
       {{#if user}}
         
       {{else}}
+        
+
         <!-- Modal Signup-->
         <div class="modal fade" id="signupModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
           <div class="modal-dialog modal-sm" role="document">
