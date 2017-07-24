@@ -1,0 +1,39 @@
+<div>
+
+</div>
+
+<script type="text/javascript">
+  $(() => {
+    var image = "{{images}}".split(",");
+
+    console.log(image);
+
+    function template(url, time, likes, description, author, likeActive) {
+      let like = "";
+      if (likeActive) {
+        like = "<i class='"+ url + " " + time +" fa fa-thumbs-up like-active' aria-hidden='true'></i> ";
+      }
+      else {
+        like = "<i class='"+ url + " " + time +" fa fa-thumbs-up' aria-hidden='true'></i> ";
+      }
+      let gravatar = "https://gravatar.com/avatar/" + MD5(author) + "?s=40";
+      let tag = "<div class='item'>" + 
+                  "<img class='img-responsive' width='250px' src='" + url + "'>" +
+                  "<div class='description'><p>"+ description +"</p></div>" +
+                  "<div>" +
+                    "<img class='profile-pic img-responsive' src='" + gravatar + "' >" +
+                    "<div class=' likes'>" +
+                    "<button class='"+ url + " "+ time + " likeButton btn btn-default'>" + 
+                      like + "<span class='"+ url + " " + time +"'>" + likes +"</span>" +
+                    "</button></div>" +
+                  "</div>" +
+                "</div>";
+      return tag;
+    }
+
+    // IMPLEMENT SINGLE PAGE LIKE AND DELETE
+
+  });
+
+  
+  </script>

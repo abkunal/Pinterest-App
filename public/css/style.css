@@ -92,31 +92,32 @@ a#drop1[aria-expanded=true] {
 #masonry {
   margin: 0 auto;
 }
-
 .item {
-    background-color: #f8f8f8;
+    background-color: #f8FfFF;
     padding: 5px;
-    width: 190px;
+    width: 260;
     text-align: center;
     margin: 5px;
     box-shadow: 2px 2px 5px rgba(102, 102, 102, 0.5);
 }
-/*
-.item.thumbnail {
-  width:  100px;
-  height: 100px;
-  background: #cfcfcf
-}
-
-.item.medium {
-  width:  150px;
-  height: 50px;
-  background: #A6E392
-}
-
-.item.large {
-  width:  200px;
-  height: 100px;
-  background: #D092E3
-}*/
 /* MASONRY END */
+
+.profile-pic {
+  display: inline-block;
+}
+
+.description {
+    background-color: #eee;
+    font-size: 1.1em;
+    padding: 1px;
+    margin: 10px;
+}
+
+.likes {
+  padding-left: 140px;
+  display: inline-block;
+}
+
+.like-active {
+  color: #1da1f2;
+}

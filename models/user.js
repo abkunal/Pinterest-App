@@ -1,5 +1,6 @@
 var mongoose = require("mongoose");
 var bcrypt = require("bcryptjs");
+var Image = require("./image");
 
 var UserSchema = mongoose.Schema({
   name: String,
@@ -37,7 +38,7 @@ module.exports.getUserByEmail = (email, callback) => {
 
 // add an image
 module.exports.addImage = (url, time, email, callback) => {
-  User.update({email: email}, {$push: {image: [url, time]}}, callback);
+  User.update({email: email}, {$push: {images: [url, time]}}, callback);
 }
 
 // delete an image
@@ -73,7 +74,60 @@ module.exports.deleteImage = (url, time, email, callback) => {
   });
 }
 
-// add an image to liked images
+// add an image to liked images if not already present
 module.exports.addLikedImage = (url, time, email, callback) => {
-  User.update({email: email}, {$push: {images: [url, time]}}, callback);
+  User.findOne({email: email}, (err, user) => {
+    if (err) throw err;
+
+    // if user exists
+    if (user) {
+      let index = user.liked.indexOf([url, time]);
+
+      // if user haven't liked the image already
+      if (index == -1) {
+        User.update({email: email}, {$push: {liked: [url, time]}}, callback);
+        Image.increaseLike(url, time, (err, msg) => {
+          if (err) throw err;
+          console.log(msg);
+        });
+      }
+    }
+  });
+}
+
+// remove an image from liked images
+module.exports.removeLikedImage = (url, time, email, callback) => {
+  User.findOne({email: email}, (err, user) => {
+    if (err) throw err;
+
+    // user exists
+    if (user) {
+      let liked = user.liked;
+      let index = -1;
+
+      for (let i in liked) {
+        if (liked[i][1].toString() == time.toString()) {
+          index = i;
+          break;
+        }
+      }
+
+      // given image present in liked images
+      if (index > -1) {
+        liked.splice(index, 1)
+
+        User.update({email: email}, {liked: liked}, callback);
+        Image.decreaseLike(url, time, (err, msg) => {
+          if (err) throw err;
+          console.log(msg);
+        });
+      }
+      else {
+        console.log("Image not present in liked images");
+      }
+    }
+    else {
+      console.log("User does not exists");
+    }
+  });
 }

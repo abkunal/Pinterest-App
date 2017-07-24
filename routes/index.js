@@ -8,14 +8,25 @@ router.get("/", (req, res) => {
     if (err) throw err;
 
     console.log(images);
-    res.render("index", {
-      user: req.user,
-      images: images
-    });
+    if (req.user) {
+
+      res.render("index", {
+        userLiked: req.user.liked,
+        images: images,
+        user: true
+      }); 
+    }
+    else {
+      res.render("index", {
+        userLiked: [],
+        images: images,
+        user: false
+      });
+    }
   });
 });
 
-
+// add a new image
 router.post("/add", (req, res) => {
   if (!req.user) {
     res.render("/", {
@@ -58,6 +69,29 @@ router.post("/add", (req, res) => {
 
       res.redirect("/");
     }
+  }
+});
+
+// show my images
+router.get("/myclicks", (req, res) => {
+  if (!req.user) {
+    res.redirect("/");
+  }
+  else {
+    User.getUserByEmail(req.user.email, (err, user) => {
+      if (err) throw err;
+
+      if (user) {
+        let images = user.images;
+
+        res.render("myclicks", {
+          images: images
+        });
+      }
+      else {
+        res.redirect("/");
+      }
+    });
   }
 });
 

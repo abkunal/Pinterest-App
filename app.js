@@ -17,6 +17,7 @@ var db = mongoose.connection;
 // Routes come here
 var index = require("./routes/index");  // Homepage
 var users = require("./routes/users");    // login and signup
+var like = require("./routes/like");    // photo like request handling
 
 // Init App
 var app = express();
@@ -78,6 +79,7 @@ app.use(function(req, res, next) {
 
 app.use("/", index);
 app.use("/users", users);
+app.use("/like", like);
 
 // handle page not found
 app.use(function(req, res) {
