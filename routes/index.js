@@ -85,13 +85,75 @@ router.get("/myclicks", (req, res) => {
         let images = user.images;
 
         res.render("myclicks", {
-          images: images
+          images: images,
+          user: user.email,
+          userLiked: user.liked
         });
       }
       else {
         res.redirect("/");
       }
     });
+  }
+});
+
+router.get("/image", (req, res) => {
+  if (!req.user) {
+    res.end("failure");
+  }
+  else {
+    let urlStart = req.url.indexOf("&url=");
+    let time = req.url.substring(req.url.indexOf("time=") + 5, urlStart);
+    let url = req.url.substring(urlStart + 5, req.url.length);
+
+    console.log(time, url);
+    console.log("called");
+    if (time && url) {
+      Image.getImage(url, time, req.user.email, (err, image) => {
+        if (err) throw err;
+
+        if (image) {
+          console.log("sent");
+          res.end(JSON.stringify(image)); 
+        }
+        else {
+          // image doesn't exist
+          res.end("failure");
+        }
+      });
+    }
+    // incorrect request send
+    else {
+      res.end("failure");
+    }
+  }
+});
+
+router.get("/delete", (req, res) => {
+  if (!req.user) {
+    res.end("failure");
+  }
+  else {
+    let urlStart = req.url.indexOf("&url=");
+    let time = req.url.substring(req.url.indexOf("time=") + 5, urlStart);
+    let url = req.url.substring(urlStart + 5, req.url.length);
+
+    if (time && url) {
+      Image.deleteImage(url, time, req.user.email, (err, msg) => {
+        if (err) throw err;
+        console.log(msg);
+      });
+
+      User.deleteImage(url, time, req.user.email, (err, msg) => {
+        if (err) throw err;
+        console.log(msg);
+      });
+
+      res.end("success");
+    }
+    else {
+      res.end("failure");
+    }
   }
 });
 

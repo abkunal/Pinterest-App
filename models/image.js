@@ -16,11 +16,8 @@ module.exports.addImage = (newImage, callback) => {
 }
 
 // get an image based on th
-module.exports.getImage = (url, description, email, callback) => {
-  Image.findOne({url: url, description: description, owner: email}, (err, image) => {
-    if (err) throw err;
-    console.log(image);
-  });
+module.exports.getImage = (url, time, email, callback) => {
+  Image.findOne({url: url, time: time, owner: email}, {_id: 0}, callback);
 }
 
 // get all images

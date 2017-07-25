@@ -76,3 +76,64 @@ MD5 = function(e) {
     return (p(a) + p(b) + p(c) + p(d)).toLowerCase()
 };
 /* end md5 hash implementation */
+
+/* Image template */
+function template(url, time, likes, description, author, likeActive) {
+  let like = "";
+  if (likeActive) {
+  like = "<i class='"+ url + " " + time +" fa fa-thumbs-up like-active' aria-hidden='true'></i> ";
+  }
+  else {
+  like = "<i class='"+ url + " " + time +" fa fa-thumbs-up' aria-hidden='true'></i> ";
+  }
+  let gravatar = "https://gravatar.com/avatar/" + MD5(author) + "?s=40";
+  let tag = "<div class='item'>" + 
+            "<img class='img-responsive' width='250px' src='" + url + "'>" +
+            "<div class='description'><p>"+ description +"</p></div>" +
+            "<div>" +
+              "<img class='profile-pic img-responsive' src='" + gravatar + "' >" +
+              "<div class=' likes'>" +
+              "<button class='btn btn-default'>" + "</button>"
+              "<button class='"+ url + " "+ time + " likeButton btn btn-default'>" + 
+                like + "<span class='"+ url + " " + time +"'>" + likes +"</span>" +
+              "</button></div>" +
+            "</div>" +
+          "</div>";
+  return tag;
+  }
+
+// send an ajax request to like to dislike an image
+function likeClicked(url, time, likeOrDislike) {
+  // likeOrDislike = true, when to like
+  // likeOrDislike = false, when to dislike
+
+  let xhr = new XMLHttpRequest();
+  if (likeOrDislike) {
+    xhr.open("GET", "/like?do=1&time=" + time + "&url=" + url, true);  
+  }
+  else {
+    xhr.open("GET", "/like?do=0&time=" + time + "&url=" + url, true); 
+  }
+
+  xhr.onreadystatechange = () => {
+    if (xhr.readyState == 4 && xhr.statusCode == 200) {
+      console.log(xhr.responseText);
+    }
+  }
+
+  xhr.send();
+}
+
+// send a request to delete the given image
+function deleteImage(url, time) {
+  let xhr = new XMLHttpRequest();
+
+  xhr.open("GET", "/delete?time=" + time + "&url=" + url, true);
+
+  xhr.onreadystatechange = () => {
+    if (xhr.readyState == 4 && xhr.status) {
+      console.log(xhr.responseText);
+    }
+  }
+  xhr.send();
+}

@@ -52,7 +52,7 @@ module.exports.deleteImage = (url, time, email, callback) => {
       let images = user.images;
 
       for (let i in images) {
-        if (images[i] == [url, time]) {
+        if (images[i][1].toString() == time.toString()) {
           index = i;
           break
         }

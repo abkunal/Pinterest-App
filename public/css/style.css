@@ -113,9 +113,17 @@ a#drop1[aria-expanded=true] {
     margin: 10px;
 }
 
-.likes {
+.likesIndex {
   padding-left: 140px;
   display: inline-block;
+}
+
+.actionButton {
+  display: inline-block;
+}
+
+.delete {
+  margin: 0 40px;
 }
 
 .like-active {
