@@ -1,14 +1,3 @@
-$(() => {
-  $('#signupModal').on('shown.bs.modal', function() {
-    $('#name').focus()
-  });
-
-  $("#loginModal").on('shown.bs.modal', function() {
-    $("#email").focus();
-  })
-});
-
-
 /* md5 hash implementation */
 MD5 = function(e) {
     function h(a, b) {
@@ -77,6 +66,7 @@ MD5 = function(e) {
 };
 /* end md5 hash implementation */
 
+
 /* Image template */
 function template(url, time, likes, description, author, likeActive) {
   let like = "";
@@ -125,10 +115,10 @@ function likeClicked(url, time, likeOrDislike) {
 }
 
 // send a request to delete the given image
-function deleteImage(url, time) {
+function deleteImage(time) {
   let xhr = new XMLHttpRequest();
 
-  xhr.open("GET", "/delete?time=" + time + "&url=" + url, true);
+  xhr.open("GET", "/delete?time=" + time, true);
 
   xhr.onreadystatechange = () => {
     if (xhr.readyState == 4 && xhr.status) {
@@ -136,4 +126,60 @@ function deleteImage(url, time) {
     }
   }
   xhr.send();
+}
+
+// put placeholder image in case of broken image
+function imgError(image) {
+    image.onerror = "";
+    image.src = "https://cdn.hyperdev.com/us-east-" +
+                "1%3A60e6615e-7d9e-47ac-903b-3b4b47372e42%2Fplaceholder.png";
+    return true;
+}
+
+// masonry styling
+function masonry() {
+  var container = document.querySelector('#masonry');
+  $("#masonry").masonry(container, {
+    columnWidth: 200,
+    itemSelector: '.item'
+  });
+}
+
+function likeOrUnlike() {
+  // click event on like buttons
+  $(".likeButton").on('click', (e) => {
+    let urlTime = $(e.target).attr('class').split(" ");
+
+    // redirect to login if user not logged in
+    if (!user) {
+      window.location.href = "http://localhost:5000/users/login";
+    } 
+    // some user is logged in     
+    else {
+      // find whether the image is already liked
+
+      // already liked
+      if ($("i." + urlTime[1]).hasClass("like-active")) {
+        // send a request to dislike the image
+        likeClicked(urlTime[0], urlTime[1], false);
+        
+        // change like button color
+        $("i." + urlTime[1]).removeClass("like-active");
+
+        // decrease like count
+        let likes = parseInt($("span." + urlTime[1]).html());
+        $("span." + urlTime[1]).html(likes - 1);
+      }
+      // not already liked
+      else {
+        // send a request to like the image
+        likeClicked(urlTime[0], urlTime[1], true);
+        $("i." + urlTime[1]).addClass("like-active");
+
+        // increase like count
+        let likes = parseInt($("span." + urlTime[1]).html());
+        $("span." + urlTime[1]).html(likes + 1);
+      }
+    }
+  });
 }

@@ -8,7 +8,8 @@ var UserSchema = mongoose.Schema({
   email: String,
   password: String,
   liked: [],
-  images: []            // [url, time]
+  images: [{url: String, description: String, time: Number, likes: Number,
+            owner: String}]
 });
 
 module.exports = User = mongoose.model("imageuser", UserSchema);
@@ -36,13 +37,13 @@ module.exports.getUserByEmail = (email, callback) => {
   User.findOne({email: email}, callback);
 }
 
-// add an image
-module.exports.addImage = (url, time, email, callback) => {
-  User.update({email: email}, {$push: {images: [url, time]}}, callback);
+// add an image to a user's record
+module.exports.addImage = (newImage, email, callback) => {
+  User.update({email: email}, {$push: {images: newImage}}, callback);
 }
 
-// delete an image
-module.exports.deleteImage = (url, time, email, callback) => {
+// delete an image from a user's record
+module.exports.deleteImage = (time, email, callback) => {
   User.findOne({email: email}, (err, user) => {
     if (err) throw err;
 
@@ -52,7 +53,7 @@ module.exports.deleteImage = (url, time, email, callback) => {
       let images = user.images;
 
       for (let i in images) {
-        if (images[i][1].toString() == time.toString()) {
+        if (images[i].time.toString() == time.toString()) {
           index = i;
           break
         }
@@ -61,15 +62,14 @@ module.exports.deleteImage = (url, time, email, callback) => {
       // image exists
       if (index > -1) {
         images.splice(index, 1);
-
         User.update({email: email}, {images: images}, callback);
       }
       else {
-        console.log("Image not found");
+        console.log("deleteImage: Image not found");
       }
     }
     else {
-      console.log("User not found");
+      console.log("deleteImage: User not found");
     }
   });
 }
@@ -83,9 +83,10 @@ module.exports.addLikedImage = (url, time, email, callback) => {
     if (user) {
       let index = user.liked.indexOf([url, time]);
 
-      // if user haven't liked the image already
+      // if user haven't liked the image already, increase like on the image
       if (index == -1) {
         User.update({email: email}, {$push: {liked: [url, time]}}, callback);
+        
         Image.increaseLike(url, time, (err, msg) => {
           if (err) throw err;
           console.log(msg);
@@ -116,6 +117,7 @@ module.exports.removeLikedImage = (url, time, email, callback) => {
       if (index > -1) {
         liked.splice(index, 1)
 
+        // update liked record and decrease likes count
         User.update({email: email}, {liked: liked}, callback);
         Image.decreaseLike(url, time, (err, msg) => {
           if (err) throw err;
@@ -123,11 +125,11 @@ module.exports.removeLikedImage = (url, time, email, callback) => {
         });
       }
       else {
-        console.log("Image not present in liked images");
+        console.log("removeLikedImage: Image not present in liked images");
       }
     }
     else {
-      console.log("User does not exists");
+      console.log("removeLikedImage: User does not exists");
     }
   });
 }

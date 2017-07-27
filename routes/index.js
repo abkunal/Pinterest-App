@@ -3,13 +3,14 @@ var router = express.Router();
 var Image = require("../models/image");
 var User = require("../models/user");
 
+// homapage
 router.get("/", (req, res) => {
+  // send all the images
   Image.getAllImages((err, images) => {
     if (err) throw err;
 
-    console.log(images);
+    // user logged in
     if (req.user) {
-
       res.render("index", {
         userLiked: req.user.liked,
         images: images,
@@ -28,16 +29,22 @@ router.get("/", (req, res) => {
 
 // add a new image
 router.post("/add", (req, res) => {
+  // if user not logged in, redirect to login and show error
   if (!req.user) {
-    res.render("/", {
+    res.render("login", {
       error_msg: "You must log in to access this page"
     });
   }
   else {
     // extract image url and description
+    let email = req.user.email;
     let imageUrl = req.body.imageUrl;
     let imageDescription = req.body.imageDescription;
     let time = new Date().getTime();
+
+    if (imageDescription == '') {
+      imageDescription = "An image by " + email.substring(0, email.indexOf("@"));
+    }
 
     // if image url is empty, show error
     if (!imageUrl) {
@@ -62,7 +69,7 @@ router.post("/add", (req, res) => {
       });
       
       // add image to user's images
-      User.addImage(imageUrl, time, req.user.email, (err, msg) => {
+      User.addImage(newImage, req.user.email, (err, msg) => {
         if (err) throw err;
         console.log(msg);
       });
@@ -72,10 +79,13 @@ router.post("/add", (req, res) => {
   }
 });
 
-// show my images
+// show a particular user's images
 router.get("/myclicks", (req, res) => {
+  // if user not logged in, redirect to login
   if (!req.user) {
-    res.redirect("/");
+    res.render("login", {
+      error_msg: "You must log in to see this page"
+    })
   }
   else {
     User.getUserByEmail(req.user.email, (err, user) => {
@@ -85,7 +95,7 @@ router.get("/myclicks", (req, res) => {
         let images = user.images;
 
         res.render("myclicks", {
-          images: images,
+          images: JSON.stringify(images),
           user: user.email,
           userLiked: user.liked
         });
@@ -97,6 +107,7 @@ router.get("/myclicks", (req, res) => {
   }
 });
 
+// TO REMOVE
 router.get("/image", (req, res) => {
   if (!req.user) {
     res.end("failure");
@@ -106,18 +117,14 @@ router.get("/image", (req, res) => {
     let time = req.url.substring(req.url.indexOf("time=") + 5, urlStart);
     let url = req.url.substring(urlStart + 5, req.url.length);
 
-    console.log(time, url);
-    console.log("called");
     if (time && url) {
-      Image.getImage(url, time, req.user.email, (err, image) => {
+      Image.getImage(decodeURIComponent(url), time, req.user.email, (err, image) => {
         if (err) throw err;
 
         if (image) {
-          console.log("sent");
           res.end(JSON.stringify(image)); 
         }
         else {
-          // image doesn't exist
           res.end("failure");
         }
       });
@@ -129,22 +136,26 @@ router.get("/image", (req, res) => {
   }
 });
 
+// delete a particular user's image
 router.get("/delete", (req, res) => {
+  // if user not logged in, return failure
   if (!req.user) {
     res.end("failure");
   }
   else {
-    let urlStart = req.url.indexOf("&url=");
-    let time = req.url.substring(req.url.indexOf("time=") + 5, urlStart);
-    let url = req.url.substring(urlStart + 5, req.url.length);
+    // extract time
+    let time = req.url.substring(req.url.indexOf("time=") + 5, req.url.length);
 
-    if (time && url) {
-      Image.deleteImage(url, time, req.user.email, (err, msg) => {
+    // if time is given
+    if (time) {
+      // delete image from database of images
+      Image.deleteImage(time, req.user.email, (err, msg) => {
         if (err) throw err;
         console.log(msg);
       });
 
-      User.deleteImage(url, time, req.user.email, (err, msg) => {
+      // delete image from owner's records
+      User.deleteImage(time, req.user.email, (err, msg) => {
         if (err) throw err;
         console.log(msg);
       });

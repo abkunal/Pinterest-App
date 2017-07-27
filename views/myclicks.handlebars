@@ -1,148 +1,130 @@
-<div id="masonry">
-
-</div>
+<div id="masonry"></div>
 
 <script type="text/javascript">
   $(() => {
+    // set body background color
+    $("body").attr("style", "background-color:darkgray");
 
     // template for image
-    function template(url, time, likes, description, author, likeActive) {
+    function template(url, time, likes, description, author, likeActive, count) {
       let like = "";
       if (likeActive) {
-        like = "<i class='"+ url + " " + time +" fa fa-thumbs-up like-active' aria-hidden='true'></i> ";
+        like = "<i class='"+ url + " " + time +" fa fa-thumbs-up like-active bInd' aria-hidden='true'></i> ";
       }
       else {
-        like = "<i class='"+ url + " " + time +" fa fa-thumbs-up' aria-hidden='true'></i> ";
+        like = "<i class='"+ url + " " + time +" fa fa-thumbs-up bInd' aria-hidden='true'></i> ";
       }
       let gravatar = "https://gravatar.com/avatar/" + MD5(author) + "?s=40";
       let tag = "<div class='item'>" + 
-                  "<img class='img-responsive' width='250px' src='" + url + "'>" +
+                  "<img class='img-responsive' width='200px' src='" + url + 
+                  "' onerror='imgError(this);'>" +
                   "<div class='description'><p>"+ description +"</p></div>" +
-                  "<div>" +
+                  "<div class='info'>" +
                     "<img class='profile-pic img-responsive' src='" + gravatar + "' >" +
                     "<div class=' actionButton'>" +
                     "<button class='"+ url + " " + time + " delete btn btn-default'>" + 
                     "<i class='"+ url + " " + time + " glyphicon glyphicon-trash'></i></button>" +
-                    "<button class='"+ url + " "+ time + " likeButton btn btn-default'>" + 
-                      like + "<span class='"+ url + " " + time +"'>" + likes +"</span>" +
+                    "<button class='"+ url + " "+ time + " likeButton bInd btn btn-default'>" + 
+                      like + "<span class='"+ url + " " + time +" bInd "+ count +"'>" + getLikes(time, count); +"</span>" +
                     "</button></div>" +
                   "</div>" +
                 "</div>";
+
       return tag;
     }
 
-    // gets informations about a particular image using url and time
-    function getImageDetails(url, time, email, userLiked) {
+    // get number of likes on a particular image by its time
+    function getLikes(time, count) {
       let xhr = new XMLHttpRequest();
 
-      xhr.open("GET", "http://localhost:5000/image?time=" + time + "&url=" + url, true);
-      
+      xhr.open("GET", "/like/image?time=" + time, true);
       xhr.onreadystatechange = () => {
-        
         if (xhr.readyState == 4 && xhr.status == 200) {
-          let response = JSON.parse(xhr.responseText);
-          let likes = response.likes;
-          let description = response.description;
-
-          // set likes and description
-          if (!likes) {
-            likes = 0;
-          }
-          if (!description) {
-            description = "An image by " + response.owner.substring(0, response.owner.indexOf("@"));
-          }
-
-          let index = -1;
-          let j = 1;
-
-          while (j < userLiked.length) {
-            if (userLiked[j].toString() == time.toString()) {
-              index = j;
-              break;
-            }
-            j++;
-          }
-
-          if (index > -1) {
-            likeActive = true;
-          }
-          else {
-            likeActive = false;
-          }
-
-          $(template(url, time, likes, description, email, likeActive)).appendTo("#masonry");
-
-          // handle masonry display
-          var container = document.querySelector('#masonry');
-          $("#masonry").masonry(container, {
-            columnWidth: 200,
-            itemSelector: '.item'
-          });
-
-          // click event on like buttons
-          $(".likeButton").on('click', (e) => {
-            let urlTime = $(e.target).attr('class').split(" ");
-
-            // find whether the image is already liked
-            // liked in this case
-            console.log("clicked");
-            if ($("i." + urlTime[1]).hasClass("like-active")) {
-              // send a request to dislike the image
-              likeClicked(urlTime[0], urlTime[1], false);
-              
-              // change like button color
-              $("i." + urlTime[1]).removeClass("like-active");
-
-              // decrease like count
-              let likes = parseInt($("span." + urlTime[1]).html());
-              $("span." + urlTime[1]).html(likes - 1);
-            }
-            else {
-              // send a request to like the image
-              likeClicked(urlTime[0], urlTime[1], true);
-              $("i." + urlTime[1]).addClass("like-active");
-
-              // increase like count
-              let likes = parseInt($("span." + urlTime[1]).html());
-              $("span." + urlTime[1]).html(likes + 1);
-            }
-            
-          });
-
-          // send a request to delete image when delete button is pressed
-          $(".delete").on('click', (e) => {
-            let urlTime = $(e.target).attr('class').split(" ");
-
-            console.log("delete");
-            deleteImage(urlTime[0], urlTime[1]);
-            // remove from page
-          });
+          // insert like value at the correct position
+          $("." + count.toString()).html(JSON.parse(xhr.responseText).likes);
         }
       }
       xhr.send();
     }
 
-    // get data from the server
-    var image = "{{images}}".split(",");
-    var email = "{{email}}";
+    // get images and data from server
+    let images = {{{images}}};
+    let user = "{{user}}";
     let userLiked = "{{userLiked}}".split(",");
-
-    console.log(image);
-    if (image && image[0] != "") {
-      console.log("image: ", image);
-      
-      let counter = 0;
-      while (counter < image.length) {
-        getImageDetails(image[counter], image[counter+1], email, userLiked);
-        counter += 2;
-      }
+    
+    // if no images are present
+    if (!images || images.length == 0) {
+      $("<h3 class='center' style='color: white'>No image found. Add an image to see here.</h3>").appendTo("#masonry");
     }
     else {
-      $("<p class='center'>You do not have any images yet</p>").appendTo("#masonry");
+      // for every image in images
+      for (let i in images) {
+        let url = images[i].url;
+        let time = images[i].time;
+        let likes = 0;
+        let description = images[i].description;
+        let owner = images[i].owner;
+        let likeActive = false;
+        
+        // set like thumb color accordingly
+        let index = -1;
+        let j = 1;
+
+        while (j < userLiked.length) {
+          if (userLiked[j].toString() == time.toString()) {
+            index = j;
+            break;
+          }
+          j++;
+        }
+
+        if (index > -1) {
+          likeActive = true;
+        }
+
+        $(template(url, time, likes, description, owner, likeActive, i)).appendTo("#masonry");
+        
+      }
     }
 
-  });
+    masonry();
 
-  // CHECK DELETE FUNCTIONALITY AND REPLACE BROKEN IMAGES WITH A DEFAULT IMAGE
-  // CREATE MULTIPLE USERS AND CHECK APP AS A WHOLE AND ALSO IMPLEMENT TWITTER LOGIN
+    // click event on like buttons
+    $(".likeButton").on('click', (e) => {
+      // find whether the image is already liked
+      let urlTime = $(e.target).attr('class').split(" ");
+      
+      // already liked
+      if ($("i." + urlTime[1] + ".bInd").hasClass("like-active")) {
+        // send a request to dislike the image
+        likeClicked(urlTime[0], urlTime[1], false);
+        
+        // change like button color
+        $("i." + urlTime[1] + ".bInd").removeClass("like-active");
+
+        // decrease like count
+        let likes = parseInt($("span." + urlTime[1]).html());
+        $("span." + urlTime[1] + ".bInd").html(likes - 1);
+      }
+      // not already liked
+      else {
+        // send a request to like the image
+        likeClicked(urlTime[0], urlTime[1], true);
+        $("i." + urlTime[1] + ".bInd").addClass("like-active");
+
+        // increase like count
+        let likes = parseInt($("span." + urlTime[1]).html());
+        $("span." + urlTime[1] + ".bInd").html(likes + 1);
+      }
+    
+    });
+
+    // send a request to delete image when delete button is pressed
+    $(".delete").on('click', (e) => {
+      let urlTime = $(e.target).attr('class').split(" ");
+
+      deleteImage(urlTime[1]);
+      window.location.href = "/myclicks";
+    });
+  });
   </script>

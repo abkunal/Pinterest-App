@@ -61,25 +61,8 @@ input {
 .right-addon input { padding-right: 30px; }
 
 /* Glyphicons positioning ends */
-
-a.navlink {
-  color: white !important;
-}
-
-a#brand {
-    color: white;
-}
-
-nav.navbar.navbar-default.navbar-fixed-top {
-    background-color: #6495ed;
-}
-
 .drop {
   margin-bottom: 5px;
-}
-
-a#drop1[aria-expanded=true] {
-    background-color: #7495ff;
 }
 
 /* MASONRY START */ 
@@ -95,13 +78,14 @@ a#drop1[aria-expanded=true] {
 .item {
     background-color: #f8FfFF;
     padding: 5px;
-    width: 260;
+    width: 100;
     text-align: center;
     margin: 5px;
-    box-shadow: 2px 2px 5px rgba(102, 102, 102, 0.5);
+    box-shadow: 2px 2px 5px rgb(102, 102, 102);
 }
 /* MASONRY END */
 
+/* Stylizing image entries */
 .profile-pic {
   display: inline-block;
 }
@@ -114,7 +98,7 @@ a#drop1[aria-expanded=true] {
 }
 
 .likesIndex {
-  padding-left: 140px;
+  padding-left: 100px;
   display: inline-block;
 }
 
@@ -123,7 +107,7 @@ a#drop1[aria-expanded=true] {
 }
 
 .delete {
-  margin: 0 40px;
+  margin: 0 30px;
 }
 
 .like-active {

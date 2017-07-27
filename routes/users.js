@@ -1,64 +1,88 @@
 var express = require("express");
 var router = express.Router();
-var User = require("../models/user");
 var passport = require("passport");
 var LocalStrategy = require("passport-local");
-var bcrypt = require("bcryptjs");
+var User = require("../models/user");
 
-router.post("/signup", (req, res) => {
-  if (req.user) {
+// show signup page
+router.get("/signup", (req, res) => {
+  // user not registered, show sign up page
+  if (!req.user) {
+    res.render("signup");
+  }
+  // user logged in, redirect to homepage
+  else {
     res.redirect("/");
   }
+});
+
+// show login page
+router.get("/login", (req, res) => {
+  // user not logged in, show login page
+  if (!req.user) {
+    res.render("login"); 
+  }
+  // user logged in, redirect to homepage
   else {
-    let name = req.body.name.trim();
-    let email = req.body.email.trim();
-    let password = req.body.password;
-    console.log(name, email, password);
+    res.redirect("/");
+  }
+});
 
-    req.checkBody("name", "Name is required").notEmpty();
-    req.checkBody("email", "Email is required").notEmpty();
-    req.checkBody("email", "Enter a valid email").isEmail();
-    req.checkBody("password", "Password is required").notEmpty();
+// Register User
+router.post("/signup", function(req, res) {
+  // get user's data
+  var name = req.body.name.trim();
+  var email = req.body.email.trim();
+  var password = req.body.password;
+  var password2 = req.body.password2;
+  
+  // Validation
+  req.checkBody("name", "Name is required").notEmpty();
+  req.checkBody("email", "Email is required").notEmpty();
+  req.checkBody("email", "Enter a valid email").isEmail();
+  req.checkBody("password", "Password is required").notEmpty();
+  req.checkBody("password", "Passwords do not match").equals(req.body.password2);
+  
+  // check whether there is any error
+  var errors = req.validationErrors();
+  
+  // if errors, show errors
+  if (errors) {
+    res.render("signup", {
+      errors: errors
+    });
+  }
+  // register user
+  else {
 
-    // check whether there is any error
-    var errors = req.validationErrors();
-    
-    // if errors, show errors
-    if (errors) {
-      res.render("signup", {
-        errors: errors
-      });
-    }
-    else {
-      let username = email.substring(0, email.indexOf("@"));
+    // Email id must be unique
+    User.getUserByEmail(email, function(err, user) {
+      if (err) throw err;
+      
+      // user doesn't exist, create user  
+      if (!user) {
+        var newUser = new User({
+          name: name,
+          email: email,
+          password: password
+        });
 
-      let newUser = new User({
-        name: name,
-        username: username,
-        email: email,
-        password: password
-      });
+        User.createUser(newUser, function(err, user) {
+          if (err) throw err;
+          console.log(user);
+        });
 
-      User.getUserByEmail(email, (err, user) => {
-        if (err) throw err;
-
-        if (user) {
-          console.log("User already exists");
-          res.render("index", {
-            error_msg: "email id already exists"
-          });
-        }
-        else {
-          User.createUser(newUser, (err, msg) => {
-            if (err) throw err;
-            console.log(msg);
-          });
-          res.render("index", {
-            success_msg: "You have been registered successfully"
-          });
-        }
-      });
-    }
+        req.flash("success_msg", "You are registered and can now login");
+        res.redirect("/users/login");    
+      }
+      // user already exists, show error
+      else {
+        var errors = [{msg: "Email id already exists"}];
+        res.render("signup", {
+          errors: errors
+        });
+      }
+    })
   }
 });
 
@@ -105,11 +129,10 @@ passport.deserializeUser(function(email, done) {
 // login form submitted, handle authetication
 router.post("/login", passport.authenticate("local", {
   successRedirect: "/",
-  failureRedirect: "/",
+  failureRedirect: "/users/login",
   failureFlash: true
   }),
   function(req, res) {
-    console.log(req.user);
     res.redirect("/");
 });
 
@@ -120,7 +143,7 @@ router.get("/logout", function(req, res) {
     req.logout();
     
     req.flash("success_msg", "You have been logged out successfully");
-    res.redirect("/");  
+    res.redirect("/users/login");  
   }
   else {
     res.redirect("/");

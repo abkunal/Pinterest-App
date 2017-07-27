@@ -15,41 +15,47 @@ module.exports.addImage = (newImage, callback) => {
   newImage.save(callback);
 }
 
-// get an image based on th
-module.exports.getImage = (url, time, email, callback) => {
-  Image.findOne({url: url, time: time, owner: email}, {_id: 0}, callback);
+// get an image information based on the time and owner email
+module.exports.getImage = (time, email, callback) => {
+  Image.findOne({time: time, owner: email}, {_id: 0}, callback);
 }
 
-// get all images
+// get image's likes
+module.exports.getLikes = (time, callback) => {
+  Image.findOne({time: time}, callback);
+}
+
+// get all images' information
 module.exports.getAllImages = (callback) => {
   Image.find().select({_id: 0, url: 1, description: 1, time: 1, owner: 1, likes: 1}).exec(callback);
 }
 
-// increase likes on your image by 1
+// increase likes on an image by 1
 module.exports.increaseLike = (url, time, callback) => {
-  Image.update({url: url, time: time}, {$inc: {likes: 1}}, callback);
+  Image.update({url: decodeURIComponent(url), time: time}, {$inc: {likes: 1}}, callback);
 }
 
-// decrease likes on your image by 1
+// decrease likes on an image by 1
 module.exports.decreaseLike = (url, time, callback) => {
-  Image.update({url: url, time: time}, {$inc: {likes: -1}}, callback);
+  Image.update({url: decodeURIComponent(url), time: time}, {$inc: {likes: -1}}, callback);
 }
 
 // delete an image
-module.exports.deleteImage = (url, time, email, callback) => {
-  Image.findOne({url: url, time: time}, (err, image) => {
+module.exports.deleteImage = (time, email, callback) => {
+  // delete image from database if it exists.
+  Image.findOne({time: time}, (err, image) => {
     if (err) throw err;
 
     if (image) {
       if (image.owner == email) {
-        Image.remove({url: url, time: time}, callback);
+        Image.remove({time: time}, callback);
       }
       else {
-        console.log("You are not allowed to perform this action.");
+        console.log("deleteImage: You are not allowed to perform this action.");
       }
     }
     else {
-      console.log("Image doesn't exist");
+      console.log("deleteImage: Image doesn't exist");
     }
   });
 }

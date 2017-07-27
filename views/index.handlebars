@@ -1,16 +1,13 @@
 <article id="wall" class="center">
-  All Images go here
-  <div id='masonry'>
-      
-    </div>
+  <div id='masonry'></div>
 </article>
 
 <script type="text/javascript">
+  // when the DOM is loaded
   $(() => {
-    let images = [{{{images}}}];
-    let userLiked = "{{userLiked}}".split(",");
-    let user = {{{user}}};
-    console.log(userLiked);
+    // get body background color
+    $("body").attr("style", "background-color:darkgray");
+
 
     // template for an image item on the page
     function template(url, time, likes, description, author, likeActive) {
@@ -23,7 +20,8 @@
       }
       let gravatar = "https://gravatar.com/avatar/" + MD5(author) + "?s=40";
       let tag = "<div class='item'>" + 
-                  "<img class='img-responsive' width='250px' src='" + url + "'>" +
+                  "<img class='img-responsive' width='200px' src='" + url + 
+                  "' onerror='imgError(this);'>" +
                   "<div class='description'><p>"+ description +"</p></div>" +
                   "<div>" +
                     "<img class='profile-pic img-responsive' src='" + gravatar + "' >" +
@@ -36,31 +34,17 @@
       return tag;
     }
 
-    // send an ajax request to like to dislike an image
-    function likeClicked(url, time, likeOrDislike) {
-      // likeOrDislike = true, when to like
-      // likeOrDislike = false, when to dislike
+    // get information from the server
+    let images = [{{{images}}}];
+    let userLiked = "{{userLiked}}".split(",");
+    let user = {{{user}}};
 
-      let xhr = new XMLHttpRequest();
-      if (likeOrDislike) {
-        xhr.open("GET", "/like?do=1&time=" + time + "&url=" + url, true);  
-      }
-      else {
-        xhr.open("GET", "/like?do=0&time=" + time + "&url=" + url, true); 
-      }
-
-      xhr.onreadystatechange = () => {
-        if (xhr.readyState == 4 && xhr.statusCode == 200) {
-          console.log(xhr.responseText);
-        }
-      }
-
-      xhr.send();
+    // if no images are found, show message
+    if (images.length == 0) {
+      $('<h3 class="center" style="color: white">No images to display. Log in to add images</h3>').appendTo("#masonry");
     }
-    
-
-    
-    if (images) {
+    else {
+      // for every image in images
       for (let i in images) {
         let url = images[i].url;
         let time = images[i].time;
@@ -69,13 +53,7 @@
         let author = images[i].owner;
         let likeActive = false;
 
-        if (!likes) {
-          likes = 0;
-        }
-        if (description == '') {
-          description = "An image by " + author.substring(0, author.indexOf("@"));
-        }
-
+        // set like thumb color accordingly
         let index = -1;
         let j = 1;
 
@@ -95,24 +73,22 @@
       }
     }
 
-    var container = document.querySelector('#masonry');
-    $("#masonry").masonry(container, {
-      columnWidth: 200,
-      itemSelector: '.item'
-    });
+    // activate masonry styling
+    masonry();
 
     // click event on like buttons
     $(".likeButton").on('click', (e) => {
       let urlTime = $(e.target).attr('class').split(" ");
 
+      // redirect to login if user not logged in
       if (!user) {
-        // REDIRECT TO LOGIN
+        window.location.href = "http://localhost:5000/users/login";
       } 
       // some user is logged in     
       else {
         // find whether the image is already liked
-        // liked in this case
-        console.log("clicked");
+
+        // already liked
         if ($("i." + urlTime[1]).hasClass("like-active")) {
           // send a request to dislike the image
           likeClicked(urlTime[0], urlTime[1], false);
@@ -124,6 +100,7 @@
           let likes = parseInt($("span." + urlTime[1]).html());
           $("span." + urlTime[1]).html(likes - 1);
         }
+        // not already liked
         else {
           // send a request to like the image
           likeClicked(urlTime[0], urlTime[1], true);
@@ -135,9 +112,5 @@
         }
       }
     });
-    
-  });
-
-
-  
+  });  
 </script>
